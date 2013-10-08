@@ -17,5 +17,6 @@
 }
 
 @property (strong,nonatomic) IBOutlet NSScrollView *observedScrollView;
+@property (assign,nonatomic) BOOL hideObservedScrollViewScrollers;
 
 @end

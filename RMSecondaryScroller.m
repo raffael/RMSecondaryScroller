@@ -15,8 +15,6 @@
 	frame.origin.x += frame.size.width-[NSScroller scrollerWidth];
 	frame.size.width = [NSScroller scrollerWidth];
     self = [super initWithFrame:frame];
-    if (self) {
-    }
     return self;
 }
 
@@ -32,6 +30,14 @@
 	return rect;
 }
 
+- (void) setHideObservedScrollViewScrollers:(BOOL)hideObservedScrollViewScrollers {
+	_hideObservedScrollViewScrollers = hideObservedScrollViewScrollers;
+	if (_hideObservedScrollViewScrollers) {
+		[_observedScrollView.verticalScroller setBounds:NSZeroRect];
+	}
+	//TODO: implement unhiding
+}
+
 - (void) setObservedScrollView:(NSScrollView *)observedScrollView {
 	_observedScrollView = observedScrollView;
 	[_observedScrollView.verticalScroller setHidden:YES];
@@ -43,13 +49,14 @@
 
 	[self setWantsLayer:YES];
 	[self setKnobProportion:0.5];
+	[self setDoubleValue:0.5];
 	[self setKnobStyle:NSScrollerKnobStyleDefault];
 	//[_scroller setScrollerStyle:NSScrollerStyleOverlay];
-	[self setDoubleValue:0.3];
 	[self setEnabled:YES];
 	[self setTarget:self];
 	[self setAction:@selector(scrollValueChanged:)];
 	
+	// We need to track mouse-hover events
 	[self updateTrackingAreas];
 }
 
@@ -61,15 +68,9 @@
 	
 	NSSize ownSize = [[_observedScrollView documentView] frame].size;
 	newOffset.y = ceilf(ownSize.height - [_observedScrollView frame].size.height)* scrollValue;
-	// If our synced position is different from our current position, reposition our content view.
-	
-	//if (!NSEqualPoints(curOffset, changedBoundsOrigin)) {
-	// Note that a scroll view watching this one will get notified here.
-	[[_observedScrollView contentView] scrollToPoint: newOffset];
-	// We have to tell the NSScrollView to update its scrollers.
-	[_observedScrollView reflectScrolledClipView:[_observedScrollView contentView]];
-	//}
 
+	[[_observedScrollView contentView] scrollToPoint: newOffset];
+	[_observedScrollView reflectScrolledClipView:[_observedScrollView contentView]];
 }
 
 - (void) observedScrollViewContentViewBoundsDidChangeNotification: (NSNotification *) notification {
@@ -87,28 +88,26 @@
 		[super drawKnob];
 	}
 }
+
 - (void) drawKnobSlotInRect:(NSRect)slotRect highlight:(BOOL)flag {
+	// If the instance is not layer-backed, make use of this to hide the black background:
     //NSDrawWindowBackground([self bounds]);
     //[self drawKnob];
 }
 
-- (void)drawRect:(NSRect)dirtyRect
-{
-	
-    /*[[NSColor colorWithCalibratedRed:1.0 green:0.0 blue:0.0 alpha:0.4] set];
-	NSRectFill(self.bounds);
-*/
-	[super drawRect:dirtyRect];
-}
-
 - (void) setFloatValue:(float)aFloat {
-	[self setAlphaValue:1.0];
-
 	[super setFloatValue:aFloat];
+
+	// If the float value changes, set up a timer to hide the knob after a period of time
+	[self setAlphaValue:1.0];
 	if (_fadeOutTimer) {
 		[_fadeOutTimer invalidate];
 	}
-	_fadeOutTimer = [NSTimer scheduledTimerWithTimeInterval:0.6 target:self selector:@selector(fadeOut) userInfo:nil repeats:NO];
+	_fadeOutTimer = [NSTimer scheduledTimerWithTimeInterval:0.6
+													 target:self
+												   selector:@selector(fadeOut)
+												   userInfo:nil
+													repeats:NO];
 }
 
 - (void) mouseEntered:(NSEvent *)theEvent {
@@ -146,4 +145,5 @@
 		[_fadeOutTimer invalidate];
 	[self.animator setAlphaValue:0];
 }
+
 @end
