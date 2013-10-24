@@ -32,10 +32,7 @@
 
 - (void) setHideObservedScrollViewScrollers:(BOOL)hideObservedScrollViewScrollers {
 	_hideObservedScrollViewScrollers = hideObservedScrollViewScrollers;
-	if (_hideObservedScrollViewScrollers) {
-		[_observedScrollView.verticalScroller setBounds:NSZeroRect];
-	}
-	//TODO: implement unhiding
+	[_observedScrollView.verticalScroller setAlphaValue:(_hideObservedScrollViewScrollers)?0:1];
 }
 
 - (void) setObservedScrollView:(NSScrollView *)observedScrollView {
