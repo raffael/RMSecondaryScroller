@@ -16,7 +16,7 @@
 	NSTrackingArea *_trackingArea;
 }
 
-@property (strong,nonatomic) IBOutlet NSScrollView *observedScrollView;
-@property (assign,nonatomic) BOOL hideObservedScrollViewScrollers;
+@property (weak,nonatomic) IBOutlet NSScrollView *observedScrollView;
+@property (assign,nonatomic) IBInspectable BOOL hideObservedScrollViewScrollers;
 
 @end
